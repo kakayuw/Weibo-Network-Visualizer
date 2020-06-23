@@ -3,7 +3,7 @@ from flask import render_template, send_from_directory, current_app
 import os
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = os.path.dirname(os.getcwd()) + "\\weiboSpider\\templates\\"
+UPLOAD_FOLDER = os.path.dirname(os.getcwd()) + "\\Weibo-Network-Visualizer\\templates\\"
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'json'}
 
 app = Flask(__name__)

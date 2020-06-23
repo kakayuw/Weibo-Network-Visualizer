@@ -54,6 +54,7 @@ class Weibo(object):
         self.weibo = []  # 存储爬取到的所有微博信息
         self.weibo_id_list = []  # 存储爬取到的所有微博id
         self.following_list = [] # store all following user's id and nickname
+        self.follower_list = []           # store all fans id and nickname
 
 
     def validate_config(self, config):
@@ -618,12 +619,36 @@ class Weibo(object):
                 following = table[0].xpath('td/a')[1]
                 fans_numb_str = table[0].xpath('td/br')[0].tail
                 followings.append(
-                    {"url": following.attrib['href'],
+                    {"id":following.attrib['href'].split('/')[-1],
+                     "url": following.attrib['href'],
                      "nickname": following.text,
                      "fans": int(re.findall(r'\d+', fans_numb_str)[0])
                      })
             sleep(random.randint(5, 10) / 10)
         self.following_list = followings
+
+    def get_follow_him_list(self):
+        """get the follower list of the id"""
+        fans_url = 'https://weibo.cn/%s/fans' % self.user_id
+        selector = self.handle_html(fans_url)
+        pagenum = self.get_page_num(selector)   # get he follow list page number
+        fans = []
+        for i in range(1, pagenum+1):
+            fan_page_url = 'https://weibo.cn/%s/fans?page=%d' % (self.user_id, i)
+            # print("crawl:", he_follow_url)
+            selector = self.handle_html(fan_page_url)
+            tables = selector.xpath('//table')
+            for table in tables:
+                following = table[0].xpath('td/a')[1]
+                fans_numb_str = table[0].xpath('td/br')[0].tail
+                fans.append(
+                    {"id":following.attrib['href'].split('/')[-1],
+                     "url": following.attrib['href'],
+                     "nickname": following.text,
+                     "fans": int(re.findall(r'\d+', fans_numb_str)[0])
+                     })
+            sleep(random.randint(5, 10) / 10)
+        self.follower_list = fans
 
     def get_one_page(self, page):
         """获取第page页的全部微博"""
@@ -656,7 +681,7 @@ class Weibo(object):
             print('Error: ', e)
             traceback.print_exc()
 
-    def get_filepath(self, type):
+    def get_filepath(self, type, suffix=None):
         """获取结果文件路径"""
         try:
             file_dir = os.path.split(
@@ -668,7 +693,8 @@ class Weibo(object):
                 os.makedirs(file_dir)
             if type == 'img' or type == 'video':
                 return file_dir
-            file_path = file_dir + os.sep + self.user_id + '.' + type
+            suf = suffix if suffix else ""
+            file_path = file_dir + os.sep + self.user_id + suf + '.' + type
             return file_path
         except Exception as e:
             print('Error: ', e)
@@ -915,21 +941,35 @@ class Weibo(object):
             if 'mongo' in self.write_mode:
                 self.weibo_to_mongodb(wrote_num)
 
+    def follow_list_to_json(self):
+        """Convert Follower and Following list to json file"""
+        import json
+        if self.crawl_mode == 'follower' or self.crawl_mode == 'follow':
+            follow_json = self.get_filepath('json', "_following")
+            with open(follow_json, 'w+', encoding='utf-8', newline='\n') as f:
+                content = json.dump(self.follower_list, f, indent=2, ensure_ascii=False)
+            print(u'writing %d follower data to ' % len(self.follower_list) + follow_json)
+        if self.crawl_mode == 'following' or self.crawl_mode == 'follow':
+            fans_json = self.get_filepath('json', "_follower")
+            with open(fans_json, 'w+', encoding='utf-8', newline='\n') as f:
+                content = json.dump(self.following_list, f, indent=2, ensure_ascii=False)
+            print(u'writing %d following data to ' % len(self.following_list) + fans_json)
+
     def get_weibo_info_follow(self):
-        """get weibo info mainly about followings and followers"""
+        """get weibo info mainly about following and folloers"""
         try:
-            profile_url = 'https://weibo.cn/u/%s' % (self.user_id)
+            profile_url = 'https://weibo.cn/u/%s' % self.user_id
             selector = self.handle_html(profile_url)
             self.get_user_info(selector)  # get nickname, weibo number, following number and fans number
-
-            self.get_he_follow_list()
-
-            profile_mask = 0
-            self.got_num = 1
-            self.write_data(profile_mask)  # write follow data
+            if self.crawl_mode == 'follow' or self.crawl_mode == 'following':
+                self.get_he_follow_list()
+            if self.crawl_mode == 'follow' or self.crawl_mode == 'following':
+                self.get_follow_him_list()
+            self.follow_list_to_json()
         except Exception as e:
             print('Error: ', e)
             traceback.print_exc()
+
 
     def get_weibo_info(self):
         """获取微博信息"""
@@ -992,11 +1032,12 @@ class Weibo(object):
             for user_id in self.user_id_list:
                 self.initialize_info(user_id)
                 print('*' * 100)
+                self.pic_download = self.video_download = 0     # default not download
                 if self.crawl_mode == 'weibo':
                     self.get_weibo_info()
-                elif self.crawl_mode == 'follow':
+                    self.pic_download = self.video_download = 1
+                elif self.crawl_mode == 'follow' or self.crawl_mode == 'following' or self.crawl_mode == 'follower':
                     self.get_weibo_info_follow()
-                    self.pic_download = self.video_download = 0
                 print(u'信息抓取完毕')
                 print('*' * 100)
                 if self.pic_download == 1:

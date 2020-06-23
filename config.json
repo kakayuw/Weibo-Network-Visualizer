@@ -1,14 +1,14 @@
 {
-	"user_id_list": ["1669879400"],
+	"user_id_list": ["6015415191"],
     "filter": 1,
     "since_date": "2018-01-01",
-    "write_mode": ["mysql"],
+    "write_mode": ["txt"],
     "crawl_mode": "follow",
     "pic_download": 1,
     "video_download": 1,
     "cookie":
-"_T_WM=51654554049; ALF=1581216180; SCF=AnYysKIieZDOFywvGwZkSlSJg-Eubqb3pD9nEfUMQkdL89Gyv6HHtFsXRwEwQ3y4MrPHPEetTDXWd7XQ4kBsA5I.; SUB=_2A25zE5VxDeRhGeFN7VsY8i_JzTiIHXVQ_zs5rDV6PUJbktANLRf9kW1NQ_yA_i3piGCliKVBJrW7Qt8aYecgmzuW; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WFzBoWk6Zu-UN9K32O3vS625JpX5K-hUgL.FoM0So.4eo2fSoB2dJLoIp7LxKML1KBLBKnLxKqL1hnLBoMRSozXeKMc1KMp; SUHB=0auQAehb10iY4E; SSOLoginState=1578624289"
-,    "mysql_config": {
+"WEIBOCN_WM=3349; H5_wentry=H5; backURL=https%3A%2F%2Fm.weibo.cn%2F; SCF=ArISyv-daGsC_EeAOE73HeeHtN5FuV79x8WGYyXKrhm7YLS4oakz6dXW2a5_C8G31JNLcDrjWzCXp9vaOeunchI.; SUB=_2A25z9ng4DeRhGeBI6FUY8y_EyTiIHXVRGRhwrDV6PUJbktANLUrwkW1NRpj5vhUm8Bcqvzm_gOgpvUTa06j7aBru; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhAAMqT-R7AVvaLibcZERzy5JpX5KzhUgL.Foqce0M4e02ReoB2dJLoIp7LxKML1KBLBKnLxKqL1hnLBoMXe050S0z4e0-E; SUHB=0gHy_SLUSJygAD; SSOLoginState=1592920168; _T_WM=93575225034; WEIBOCN_FROM=1110006030; MLOGIN=1; XSRF-TOKEN=ebcd34; M_WEIBOCN_PARAMS=luicode%3D20000174%26uicode%3D20000174",
+        "mysql_config": {
         "host": "localhost",
         "port": 3306,
         "user": "root",
