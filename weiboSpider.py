@@ -1048,6 +1048,17 @@ class Weibo(object):
             print('Error: ', e)
             traceback.print_exc()
 
+    def get_usermeta(self):
+        """get name-id pair from crawled users"""
+        if not self.user:
+            self.user_id = self.user_id_list[0]
+            print("fucking user id", self.user_id)
+            self.initialize_info(self.user_id)
+            url = 'https://weibo.cn/u/%s' % self.user_id
+            selector = self.handle_html(url)
+            self.get_user_info(selector)
+        return self.user['nickname'], self.user['id']
+
 
 def crawl_followings_to_mysql(userid=None):
     try:

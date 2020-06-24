@@ -1,13 +1,21 @@
 from flask import Flask
-from flask import render_template, send_from_directory, current_app
+from flask import render_template, send_from_directory, current_app, g
 import os
 from werkzeug.utils import secure_filename
+
+from SpiderController import SpiderController
 
 UPLOAD_FOLDER = os.path.dirname(os.getcwd()) + "\\Weibo-Network-Visualizer\\templates\\"
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'json'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+@app.before_request
+def init():
+    WEIBO_FOLDER = os.path.dirname(os.getcwd()) + "\\Weibo-Network-Visualizer\\weibo\\"
+    g.cxt = SpiderController(WEIBO_FOLDER)
 
 
 @app.route('/')
@@ -24,3 +32,14 @@ def hello():
 def get_json(filename):
     print("filename is ", filename, app.config['UPLOAD_FOLDER'])
     return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=filename)
+
+
+# getting layer 1 network
+@app.route('/cluster/<int:wbid>')
+def get_cluster_json(wbid):
+    wbid = g.cxt.run_spider()
+    return g.cxt.format_layer1_json(wbid)
+
+
+
+
