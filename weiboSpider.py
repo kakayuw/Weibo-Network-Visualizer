@@ -1051,13 +1051,18 @@ class Weibo(object):
     def get_usermeta(self):
         """get name-id pair from crawled users"""
         if not self.user:
-            self.user_id = self.user_id_list[0]
-            print("fucking user id", self.user_id)
-            self.initialize_info(self.user_id)
-            url = 'https://weibo.cn/u/%s' % self.user_id
-            selector = self.handle_html(url)
-            self.get_user_info(selector)
-        return self.user['nickname'], self.user['id']
+            try:
+                self.user_id = self.user_id_list[0]
+                self.get_nickname()
+            except Exception as e:
+                print('Error: ', e)
+                traceback.print_exc()
+        return self.user['nickname'], self.user_id
+
+    def seed_user(self, uid):
+        """ update seed user for crawl """
+        self.user_id = uid
+        self.user_id_list = [self.user_id]
 
 
 def crawl_followings_to_mysql(userid=None):
@@ -1079,6 +1084,7 @@ def crawl_followings_to_mysql(userid=None):
     except Exception as e:
         print('Error: ', e)
         traceback.print_exc()
+
 
 
 if __name__ == '__main__':

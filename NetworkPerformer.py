@@ -15,6 +15,9 @@ class Node:
         self.fans = fans
         self.fans_num = len(self.fans)
 
+    def isloaded(self):
+        return self.wbid and self.nickname and self.follows and self.fans
+
 
 class NetworkPerformer:
 
@@ -44,7 +47,7 @@ class NetworkPerformer:
 
     def load_node(self, uuid, nickname):
         """ load a node into context from given uuid and unique nickname """
-        if uuid in self.dic:        # check exist first
+        if uuid in self.dic and self.dic[uuid].isloaded():        # check exist first
             return self.dic[uuid]
         else:                       # load from local json file
             follows_path = self.weibo_filepath + "/%s/%s_following.json" % (nickname, uuid)
@@ -61,6 +64,31 @@ class NetworkPerformer:
                 # load node to storage
                 self.dic[uuid] = node
                 return node
+
+    @staticmethod
+    def cluster_purifier(dic: dict, cluster_size: int=0, filter_rate: float=1.0):
+        """ reduce cluster size by random sampling """
+        from collections import defaultdict
+        from random import random
+        # init threshold
+        if cluster_size == 0:
+            filter_rate = 0
+        clusters = defaultdict(list)
+        for e in dic['links']:
+            s, t, w = e['source'], e['target'], e['value']
+            clusters[s].append(t)
+            clusters[t].append(s)
+        # randomly sampling
+        for k in tuple(clusters.keys()):
+            if len(clusters[k]) == 1:
+                if random() > filter_rate:
+                    clusters.pop(k)
+        # reconstruct dict
+        dic['nodes'] = list(filter(lambda x: x['id'] in clusters, dic['nodes']))
+        dic['links'] = list(filter(lambda x: x['source'] in clusters and x['target'] in clusters, dic['links']))
+        return dic
+
+
 
 # if __name__ == '__main__':
 #     np = NetworkPerformer(path="C:\\Users\\kakay\\PycharmProjects\\Weibo-Network-Visualizer\\weibo");

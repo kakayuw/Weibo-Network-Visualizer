@@ -31,6 +31,10 @@ class SpiderController:
             print('Error: ', e)
             traceback.print_exc()
 
+    def update_dic(self, uuid, name):
+        self.name2id[name] = uuid
+        self.id2name[uuid] = name
+
     def run_spider(self):
         """ run spider as configured in cfg file """
         name, wbid = self.wb.get_usermeta()
@@ -39,25 +43,6 @@ class SpiderController:
         self.name2id[name] = wbid
         self.id2name[wbid] = name
         return wbid
-
-    def run_spider_layer2(self):
-        # TODO: LAYER2
-        """ run spider as configured in cfg file exploring 1 degree"""
-        name, wbid = self.wb.get_usermeta()
-        if not self.check_follow_file_exists(wbid, name):
-            self.wb.start()
-        self.name2id[name] = wbid
-        self.id2name[wbid] = name
-        return wbid
-
-
-    def check_follow_file_exists(self, uuid, name):
-        """ check whether given filepath is a file """
-        if "follow" in self.wb.crawl_mode and \
-            os.path.isfile(self.json_path + '\\%s\\%s_following.json' % (name, uuid)) \
-                and os.path.isfile(self.json_path + '\\%s\\%s_follower.json'% (name, uuid)):
-                return True
-        return False
 
     def format_layer1_json(self, uuid: str):
         """ get first layer cluster json configuration from context """
@@ -68,21 +53,68 @@ class SpiderController:
         follow_set = set(centroid.follows) - intersection
         for n in set(centroid.follows + centroid.fans):         # form node dict
             seq = 1 if n in follow_set else 2 if n in intersection else 3
-            if self.filter_user(n):
+            if self.valid_user(n.fans_num):
                 nodes.append(self.dicfy_node(n, seq))
         for n in centroid.follows:                         # form edge dict
             seq = 1 if n in follow_set else 2 if n in intersection else 3
-            if self.filter_user(n):
+            if self.valid_user(n.fans_num):
                 edges.append(self.dicfy_edge(centroid, n, seq))
         for n in centroid.fans:
             seq = 1 if n in follow_set else 2 if n in intersection else 3
-            if self.filter_user(n):
+            if self.valid_user(n.fans_num):
                 edges.append(self.dicfy_edge(centroid, n, seq))
         return {"nodes": nodes, "links": edges}            # form json string
 
+    def format_layer2_json(self, uuid: int):
+        """ run spider as configured in cfg file exploring 1 degree"""
+        # get degree 0 and degree 1
+        self.wb.seed_user(uuid)
+        name, wbid = self.wb.get_usermeta()
+        self.update_dic(wbid, name)
+        if not self.check_follow_file_exists(wbid, name):
+            self.wb.start()
+        miserables = [self.format_layer1_json(wbid)]
+        neighbors = self.get_layer1_list(wbid, name)
+        # crawl degree 2
+        for k, v in neighbors.items():
+            if not self.check_follow_file_exists(k, v):
+                self.wb.seed_user(k)
+                self.wb.start()
+            self.update_dic(k, neighbors[k])
+            miserable = self.format_layer1_json(k)
+            miserables.append(miserable)
+        miserables = self.dic_join(miserables)
+        miserables = self.graph.cluster_purifier(miserables)
+        return miserables
+
+    def get_layer1_list(self, uuid, nickname):
+        """ load 1 degree neighbor id """
+        layer1 = dict()
+        follows_path = self.json_path + "\\%s\\%s_following.json" % (nickname, uuid)
+        fans_path = self.json_path + "\\%s\\%s_follower.json" % (nickname, uuid)
+        with open(follows_path) as follow_file, open(fans_path) as fan_file:
+            # load nodes from json
+            follows_json = follow_file.read()
+            follows_dic_list = json.loads(follows_json)
+            fans_json = (fan_file.read())
+            fans_dic_list = json.loads(fans_json)
+            # update dict
+            layer1.update({dic['id']: dic['nickname'] for dic in follows_dic_list if dic['id'].isdigit() and self.valid_user(dic['fans'])})
+            layer1.update({dic['id']: dic['nickname'] for dic in fans_dic_list if dic['id'].isdigit() and self.valid_user(dic['fans'])})
+        return layer1
+
+    def check_follow_file_exists(self, uuid, name):
+        """ check whether given filepath is a file """
+        if "follow" in self.wb.crawl_mode and \
+            os.path.isfile(self.json_path + '\\%s\\%s_following.json' % (name, uuid)) \
+                and os.path.isfile(self.json_path + '\\%s\\%s_follower.json'% (name, uuid)):
+                return True
+        return False
+
+    # static methods
     @staticmethod
-    def filter_user(n: Node):
-        if n.fans_num == 0 or 10 < n.fans_num < 500:
+    def valid_user(num: int):
+        if num == 0 or 20 < num < 550:
             return True
         else:
             return False
@@ -101,6 +133,24 @@ class SpiderController:
         e['target'] = moon.wbid
         e['value'] = layer
         return e
+
+    @staticmethod
+    def dic_join(dic_list: list):
+        nodedic, edgedic = set(), set()
+        nodes, links = list(), list()
+        for dic in dic_list:
+            for node in dic['nodes']:
+                if node['id'] not in nodedic:
+                    nodedic.add(node['id'])
+                    nodes.append(node)
+            for link in dic['links']:
+                a, b, w = link['source'], link['target'], link['value']
+                if (b, a) in edgedic and w != 2:    link['value'] = 2
+                if (a, b) not in edgedic:
+                    edgedic.add((a, b))
+                    links.append(link)
+        return {"nodes": nodes, "links": links}
+
 
 if __name__ == '__main__':
     sc = SpiderController("C:\\Users\\kakay\\PycharmProjects\\Weibo-Network-Visualizer\\weibo")
