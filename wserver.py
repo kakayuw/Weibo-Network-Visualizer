@@ -53,11 +53,11 @@ def get_json(filename):
 @app.route('/cluster/<int:wbid>')
 def get_cluster_json(wbid):
     wbid = g.cxt.run_spider()
-    return g.cxt.format_layer1_json(wbid)
+    return g.cxt.format_layer1_json(str(wbid))
 
 
 # getting layer 2 network
 @app.route('/double/<int:wbid>')
 def get_layer2_json(wbid):
-    return g.cxt.format_layer2_json(wbid)
+    return g.cxt.format_layer2_json(str(wbid))
 

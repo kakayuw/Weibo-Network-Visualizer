@@ -90,8 +90,8 @@ class SpiderController:
     def get_layer1_list(self, uuid, nickname):
         """ load 1 degree neighbor id """
         layer1 = dict()
-        follows_path = self.json_path + "\\%s\\%s_following.json" % (nickname, uuid)
-        fans_path = self.json_path + "\\%s\\%s_follower.json" % (nickname, uuid)
+        follows_path = self.json_path + "%s\%s_following.json" % (nickname, uuid)
+        fans_path = self.json_path + "%s\%s_follower.json" % (nickname, uuid)
         with open(follows_path) as follow_file, open(fans_path) as fan_file:
             # load nodes from json
             follows_json = follow_file.read()
@@ -106,8 +106,8 @@ class SpiderController:
     def check_follow_file_exists(self, uuid, name):
         """ check whether given filepath is a file """
         if "follow" in self.wb.crawl_mode and \
-            os.path.isfile(self.json_path + '\\%s\\%s_following.json' % (name, uuid)) \
-                and os.path.isfile(self.json_path + '\\%s\\%s_follower.json'% (name, uuid)):
+            os.path.isfile(self.json_path + '%s\%s_following.json' % (name, uuid)) \
+                and os.path.isfile(self.json_path + '%s\%s_follower.json'% (name, uuid)):
                 return True
         return False
 
@@ -124,6 +124,7 @@ class SpiderController:
         n = dict()
         n['id'] = node.wbid
         n['group'] = layer
+        n['size'] = node.fans_num
         return n
 
     @staticmethod

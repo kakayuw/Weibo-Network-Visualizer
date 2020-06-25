@@ -29,30 +29,57 @@ var svg = d3.select("svg"),
 
 var color = d3.scaleOrdinal(d3.schemeCategory20);
 
+// form legend
+svg.append("circle").attr("cx",160).attr("cy",80).attr("r", 6).style("fill", color(0))
+svg.append("circle").attr("cx",160).attr("cy",110).attr("r", 6).style("fill", color(1))
+svg.append("circle").attr("cx",160).attr("cy",140).attr("r", 6).style("fill", color(2))
+svg.append("circle").attr("cx",160).attr("cy",170).attr("r", 6).style("fill", color(3))
+svg.append("text").attr("x", 180).attr("y", 80).text("You").style("font-size", "15px").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 180).attr("y", 110).text("Following").style("font-size", "15px").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 180).attr("y", 140).text("Following & Fan").style("font-size", "15px").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 180).attr("y", 170).text("Fan").style("font-size", "15px").attr("alignment-baseline","middle")
+
+// build the arrow.
+svg.append("svg:defs").selectAll("marker")
+    .data(["end"])      // Different link/path types can be defined here
+  .enter().append("svg:marker")    // This section adds in the arrows
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 20)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .attr("xoverflow", "visible")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+var repelForce = d3.forceManyBody().strength(-100).distanceMin(60);
+
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody())
+    .force("charge", repelForce)
     .force("center", d3.forceCenter(width / 2, height / 2));
 
 d3.json("double/{{uuid}}", function(error, graph) {
   if (error) throw error;
 
   var link = svg.append("g")
-      .attr("class", "links")
+    .attr("class", "links")
     .selectAll("line")
     .data(graph.links)
     .enter().append("line")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); })
-      .style("stroke", function(d) { return color(d.value); });
+    //.attr("stroke-width", function(d) { return d.value; })
+    .style("stroke", function(d) { return color(d.value); });
+    //.attr("marker-end", "url(#end)");
 
   var node = svg.append("g")
       .attr("class", "nodes")
     .selectAll("g")
     .data(graph.nodes)
-    .enter().append("g")
-    
-  var circles = node.append("circle")
-      .attr("r", 5)
+    .enter()
+    .append("circle")
+      .attr("r", function(d) { return Math.log2(d.size); })
       .attr("fill", function(d) { return color(d.group); })
       .call(d3.drag()
           .on("start", dragstarted)

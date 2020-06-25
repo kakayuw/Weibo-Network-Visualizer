@@ -13,7 +13,8 @@ class Node:
     def init_neighbors(self, follows: list, fans: list):
         self.follows = follows
         self.fans = fans
-        self.fans_num = len(self.fans)
+        if not self.fans_num and len(self.fans):
+            self.fans_num = len(self.fans)
 
     def isloaded(self):
         return self.wbid and self.nickname and self.follows and self.fans
@@ -29,6 +30,7 @@ class NetworkPerformer:
     def center(self, uuid, nickname):
         """ center a node with given uuid """
         self.centroid = self.load_node(uuid, nickname)
+        self.centroid.fans_num *= 10
         return self.centroid
 
     def load_node_from_json(self, json_str: str):
@@ -50,8 +52,8 @@ class NetworkPerformer:
         if uuid in self.dic and self.dic[uuid].isloaded():        # check exist first
             return self.dic[uuid]
         else:                       # load from local json file
-            follows_path = self.weibo_filepath + "/%s/%s_following.json" % (nickname, uuid)
-            fans_path = self.weibo_filepath + "/%s/%s_follower.json" % (nickname, uuid)
+            follows_path = self.weibo_filepath + "%s\%s_following.json" % (nickname, uuid)
+            fans_path = self.weibo_filepath + "%s\%s_follower.json" % (nickname, uuid)
             with open(follows_path) as follow_file, open(fans_path) as fan_file:
                 # load nodes from json
                 follows_json = (follow_file.read())
