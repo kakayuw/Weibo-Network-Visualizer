@@ -84,7 +84,7 @@ class SpiderController:
             miserable = self.format_layer1_json(k)
             miserables.append(miserable)
         miserables = self.dic_join(miserables)
-        miserables = self.graph.cluster_purifier(miserables)
+        miserables = self.graph.cluster_purifier(miserables, centroid=str(uuid))
         return miserables
 
     def get_layer1_list(self, uuid, nickname):

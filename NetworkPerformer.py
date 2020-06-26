@@ -68,8 +68,11 @@ class NetworkPerformer:
                 return node
 
     @staticmethod
-    def cluster_purifier(dic: dict, cluster_size: int=0, filter_rate: float=1.0):
-        """ reduce cluster size by random sampling """
+    def cluster_purifier(dic: dict, centroid:str, cluster_size: int=0, filter_rate: float=1.0):
+        """
+            1. reduce cluster size by random sampling
+            2. mark up each nodes' layer
+        """
         from collections import defaultdict
         from random import random
         # init threshold
@@ -85,6 +88,26 @@ class NetworkPerformer:
             if len(clusters[k]) == 1:
                 if random() > filter_rate:
                     clusters.pop(k)
+        # layer mark
+        # bfs to calculate layers
+        layerdic = dict()
+        q, layer = [centroid, None], 0
+        while q:
+            x = q.pop(0)
+            if x is None:
+                layer += 1
+                if q: q.append(None)
+            else:
+                layerdic[x] = layer
+                if x not in clusters:
+                    continue
+                for n in clusters[x]:
+                    if n not in layerdic:
+                        q.append(n)
+        # add mark to dic
+        for i in range(len(dic['nodes'])):
+            if dic['nodes'][i]['id'] in layerdic:
+                dic['nodes'][i]['layer'] = layerdic[dic['nodes'][i]['id']]
         # reconstruct dict
         dic['nodes'] = list(filter(lambda x: x['id'] in clusters, dic['nodes']))
         dic['links'] = list(filter(lambda x: x['source'] in clusters and x['target'] in clusters, dic['links']))

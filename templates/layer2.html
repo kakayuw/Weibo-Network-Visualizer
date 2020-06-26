@@ -58,7 +58,9 @@ var repelForce = d3.forceManyBody().strength(-100).distanceMin(60);
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", repelForce)
+    .force("repelForce", repelForce)
+    .force("charge", d3.forceCollide().radius(10))
+    .force("r", d3.forceRadial(function(d) { return d.layer * 150; }))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
 d3.json("double/{{uuid}}", function(error, graph) {
@@ -79,12 +81,14 @@ d3.json("double/{{uuid}}", function(error, graph) {
     .data(graph.nodes)
     .enter()
     .append("circle")
-      .attr("r", function(d) { return Math.log2(d.size); })
-      .attr("fill", function(d) { return color(d.group); })
-      .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended));
+    .attr("r", function(d) { return Math.log2(d.size); })
+    .attr("fill", function(d) { return color(d.group); })
+    .style("opacity", function(d) { return 1 - (d.layer * 0.2) })
+    .call(d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended));
+
 
 /* disabled text labels
   var lables = node.append("text")
