@@ -27,6 +27,7 @@ def after_request(response):
     print("request response time:", diff)
     return response
 
+# TODO: REACT
 
 @app.route('/')
 def hello_world():
