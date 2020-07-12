@@ -4,6 +4,7 @@ from flask import Flask
 from flask import render_template, send_from_directory, current_app, g
 import os
 from werkzeug.utils import secure_filename
+from flask_cors import CORS, cross_origin
 
 from SpiderController import SpiderController
 
@@ -12,6 +13,7 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'json'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+CORS(app)
 
 
 @app.before_request

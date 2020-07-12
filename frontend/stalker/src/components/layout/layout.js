@@ -1,6 +1,7 @@
 import React from 'react';
 import 'antd/dist/antd.css';
 import './layout.css';
+import NetworkCanvas from '../canvas/canvas'
 import { Layout, Menu, Breadcrumb } from 'antd';
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
 
@@ -53,7 +54,9 @@ export default class PlatLayout extends React.Component {
                     </SubMenu>
                   </Menu>
                 </Sider>
-                <Content style={{ padding: '0 24px', minHeight: 400 }}>Content</Content>
+                <Content style={{ padding: '0 24px', minHeight: 400 }}>
+                  <NetworkCanvas/>
+                </Content>
               </Layout>
             </Content>
             <Footer style={{ textAlign: 'center' }}>Stalker@Drake</Footer>
