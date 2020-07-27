@@ -12,6 +12,10 @@ const { Search } = Input;
 const style = { margin: '20px 20px 20px 20px' };
 const url_prefix = "http://localhost:5000/double/";
 
+
+//  TODO: ADD TOGGLE BUTTON & ADJUST TEXT
+
+
 export default class NetworkCanvas extends React.Component {
 
   trigger(url) {
@@ -76,10 +80,14 @@ export default class NetworkCanvas extends React.Component {
         //.attr("marker-end", "url(#end)");
   
       var node = svg.append("g")
-          .attr("class", "nodes")
+        .attr("class", "nodes")
         .selectAll("g")
         .data(graph.nodes)
         .enter()
+        .append("g"); // important for adding text
+
+      var circles = 
+        node
         .append("circle")
         .attr("r", function(d) { return Math.log2(d.size); })
         .attr("fill", function(d) { return color(d.group); })
@@ -90,13 +98,13 @@ export default class NetworkCanvas extends React.Component {
         .on("end", dragended));
   
   
-    /* disabled text labels
-      var lables = node.append("text")
+      // disabled text labels
+      var labels = node.append("text")
           .text(function(d) {
-            return d.id;
+            return d.name;
           })
           .attr('x', 6)
-          .attr('y', 3);*/
+          .attr('y', 3);
   
       node.append("title")
           .text(function(d) { return d.id; });

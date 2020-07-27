@@ -85,7 +85,7 @@ class SpiderController:
             miserables.append(miserable)
         miserables = self.dic_join(miserables)
         miserables = self.graph.cluster_purifier(miserables, centroid=str(uuid))
-        return miserables
+        return json.dumps(miserables, ensure_ascii=False).encode('utf8')
 
     def get_layer1_list(self, uuid, nickname):
         """ load 1 degree neighbor id """
@@ -125,6 +125,7 @@ class SpiderController:
         n['id'] = node.wbid
         n['group'] = layer
         n['size'] = node.fans_num
+        n['name'] = node.nickname
         return n
 
     @staticmethod
