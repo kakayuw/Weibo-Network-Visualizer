@@ -2,11 +2,13 @@ import React from 'react';
 import 'antd/dist/antd.css';
 import './layout.css';
 import NetworkCanvas from '../canvas/canvas'
-import { Layout, Menu, Breadcrumb } from 'antd';
+import { Input, Layout, Menu, Breadcrumb, Button, Tooltip, Row, Col  } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
 const { Header, Content, Footer, Sider } = Layout;
+
 
 export default class PlatLayout extends React.Component {
     render() {
