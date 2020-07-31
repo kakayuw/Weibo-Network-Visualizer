@@ -1,9 +1,9 @@
 import React from 'react';
 import 'antd/dist/antd.css';
 import './canvas.css';
-import { Layout, Menu, Breadcrumb, Input, Button, Tooltip, Row, Col  } from 'antd';
+import { Drawer, Layout, Menu, Breadcrumb, Input, Button, Tooltip, Row, Col  } from 'antd';
 import * as d3 from 'd3'
-import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, UserOutlined, LaptopOutlined, NotificationOutlined, InfoOutlined } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
 const { Header, Content, Footer, Sider } = Layout;
@@ -34,14 +34,14 @@ export default class NetworkCanvas extends React.Component {
     var color = d3.scaleOrdinal(d3.schemeCategory20);
   
     // form legend
-    svg.append("circle").attr("cx",160).attr("cy",80).attr("r", 6).style("fill", color(0))
-    svg.append("circle").attr("cx",160).attr("cy",110).attr("r", 6).style("fill", color(1))
-    svg.append("circle").attr("cx",160).attr("cy",140).attr("r", 6).style("fill", color(2))
-    svg.append("circle").attr("cx",160).attr("cy",170).attr("r", 6).style("fill", color(3))
-    svg.append("text").attr("x", 180).attr("y", 80).text("You").style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 180).attr("y", 110).text("Following").style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 180).attr("y", 140).text("Following & Fan").style("font-size", "15px").attr("alignment-baseline","middle")
-    svg.append("text").attr("x", 180).attr("y", 170).text("Fan").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("circle").attr("cx",60).attr("cy",30).attr("r", 6).style("fill", color(0))
+    svg.append("circle").attr("cx",60).attr("cy",60).attr("r", 6).style("fill", color(1))
+    svg.append("circle").attr("cx",60).attr("cy",90).attr("r", 6).style("fill", color(2))
+    svg.append("circle").attr("cx",60).attr("cy",120).attr("r", 6).style("fill", color(3))
+    svg.append("text").attr("x", 80).attr("y", 30).text("You").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 80).attr("y", 60).text("Following").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 80).attr("y", 90).text("Following & Fan").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 80).attr("y", 120).text("Fan").style("font-size", "15px").attr("alignment-baseline","middle")
   
     // build the arrow.
     svg.append("svg:defs").selectAll("marker")
@@ -99,15 +99,15 @@ export default class NetworkCanvas extends React.Component {
   
   
       // disabled text labels
-      var labels = node.append("text")
-          .text(function(d) {
-            return d.name;
-          })
-          .attr('x', 6)
-          .attr('y', 3);
+      // var labels = node.append("text")
+      //     .text(function(d) {
+      //       return d.name;
+      //     })
+      //     .attr('x', 6)
+      //     .attr('y', 3);
   
       node.append("title")
-          .text(function(d) { return d.id; });
+          .text(function(d) { return "wbid: " + d.id + "\nname: " + d.name; });
   
       simulation
           .nodes(graph.nodes)
@@ -152,6 +152,21 @@ export default class NetworkCanvas extends React.Component {
     this.trigger()
   }
 
+  // drawer trigger
+  state = { visible: false };
+
+  showDrawer = () => {
+    this.setState({
+      visible: true,
+    });
+  };
+
+  onClose = () => {
+    this.setState({
+      visible: false,
+    })
+  };
+
   render() {
     return (
       <Layout  className="canvas-background">
@@ -164,11 +179,27 @@ export default class NetworkCanvas extends React.Component {
             onSearch={value => this.trigger(url_prefix+value)}
           />
           </Col>
-          <Col span={8}></Col>
-          <Col span={8}></Col>
+          <Col span={8} style={style}>
+            <Button type="primary" shape="circle" size="large" icon={<InfoOutlined />} onClick={this.showDrawer}>
+            </Button>
+          </Col>
+          <Col span={8} style={style}></Col>
         </Row>
-
-        <svg width="960" height="600" ref="canvas"></svg>    
+        <div className="site-drawer-render-in-current-wrapper">
+        <Drawer
+          title="Basic Drawer"
+          placement="right"
+          closable={true}
+          onClose={this.onClose}
+          visible={this.state.visible}
+          getContainer={false}
+          style={{ position: 'absolute' }}
+        >
+          <p>Some contents...</p>
+        </Drawer>
+        <svg width="960" height="600" ref="canvas"></svg>
+        </div>
+            
       </Layout>
       );
   }
